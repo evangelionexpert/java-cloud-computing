@@ -1,0 +1,5 @@
+rootProject.name = 'java-cloud-computing'
+
+include 'app:server'
+include 'app:client-example'
+include 'lib'
