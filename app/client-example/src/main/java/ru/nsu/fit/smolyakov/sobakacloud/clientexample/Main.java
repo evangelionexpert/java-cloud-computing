@@ -1,9 +1,14 @@
 package ru.nsu.fit.smolyakov.sobakacloud.clientexample;
 
-import ru.nsu.fit.smolyakov.sobakacloud.library.Hello;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.ClientSendTest;
 
 public class Main {
     public static void main(String[] args) {
-        Hello.hello();
+        var cla = new ClientSendTest();
+        try {
+            cla.a();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
