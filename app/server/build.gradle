@@ -1,17 +1,19 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
-group = 'ru.nsu.fit.smolyakov.sobakacloud'
-version = 1.0
+application {
+    mainClass = 'ru.nsu.fit.smolyakov.sobakacloud.server.app.Main'
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation 'org.eclipse.jetty:jetty-client:11.0.20'
-    implementation 'org.slf4j:slf4j-log4j12:2.0.12' // testImplementation??
+    implementation project(':lib:server')
+    implementation 'org.slf4j:slf4j-log4j12:2.0.12'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'

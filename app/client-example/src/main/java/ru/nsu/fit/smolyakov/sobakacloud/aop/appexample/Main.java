@@ -1,4 +1,4 @@
-package ru.nsu.fit.smolyakov.sobakacloud.clientexample;
+package ru.nsu.fit.smolyakov.sobakacloud.aop.appexample;
 
 import ru.nsu.fit.smolyakov.sobakacloud.aop.ClientSendTest;
 
