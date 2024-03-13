@@ -13,15 +13,44 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import java.nio.file.Path;
 
 public class ComputingServer {
-    private final int port;
-    private final int computingTimeout;
-
     public final static int DEFAULT_PORT = 8080;
     public final static int DEFAULT_COMPUTING_TIMEOUT = 0;
+    private final int port;
+    private final int computingTimeout;
 
     private ComputingServer(int port, int computingTimeout) {
         this.port = port;
         this.computingTimeout = computingTimeout;
+    }
+
+    public static ComputingServerBuilder builder() {
+        return new ComputingServerBuilder(DEFAULT_PORT, DEFAULT_COMPUTING_TIMEOUT);
+    }
+
+    public void start() throws Exception {
+        Server server = new Server(this.port);
+        HttpConfiguration httpConfig = new HttpConfiguration();
+        httpConfig.setMultiPartFormDataCompliance(MultiPartFormDataCompliance.RFC7578);
+
+        ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+        connector.setPort(0);
+        server.addConnector(connector);
+
+        WebAppContext context = new WebAppContext();
+        context.setContextPath("/");
+        context.setBaseResource(new PathResource(Path.of("unused")));
+
+        long maxFileSize = Long.MAX_VALUE;
+        long maxRequestSize = Long.MAX_VALUE;
+        int fileSizeThreshold = 2 * 1024 * 1024;// todo мб вынести
+
+        MultipartConfigElement multipartConfig = new MultipartConfigElement(null, maxFileSize, maxRequestSize, fileSizeThreshold);
+        ServletHolder holder = context.addServlet(ComputingServlet.class, "/multipart");
+        holder.getRegistration().setMultipartConfig(multipartConfig);
+
+        server.setHandler(context);
+        server.start();
+        server.join();
     }
 
     public static class ComputingServerBuilder {
@@ -48,35 +77,5 @@ public class ComputingServer {
         public ComputingServer build() {
             return new ComputingServer(this.port, this.computingTimeout);
         }
-    }
-
-    public static ComputingServerBuilder builder() {
-        return new ComputingServerBuilder(DEFAULT_PORT, DEFAULT_COMPUTING_TIMEOUT);
-    }
-
-    public void start() throws Exception {
-        Server server = new Server(this.port);
-        HttpConfiguration httpConfig = new HttpConfiguration();
-        httpConfig.setMultiPartFormDataCompliance(MultiPartFormDataCompliance.RFC7578);
-
-        ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
-        connector.setPort(0);
-        server.addConnector(connector);
-
-        WebAppContext context = new WebAppContext();
-        context.setContextPath("/");
-        context.setBaseResource(new PathResource(Path.of("unused")));
-
-        long maxFileSize = Long.MAX_VALUE;
-        long maxRequestSize = Long.MAX_VALUE;
-        int fileSizeThreshold = (int)(2 * 1024 * 1024);// todo мб вынести
-
-        MultipartConfigElement multipartConfig = new MultipartConfigElement(null, maxFileSize, maxRequestSize, fileSizeThreshold);
-        ServletHolder holder = context.addServlet(ComputingServlet.class, "/multipart");
-        holder.getRegistration().setMultipartConfig(multipartConfig);
-
-        server.setHandler(context);
-        server.start();
-        server.join();
     }
 }
