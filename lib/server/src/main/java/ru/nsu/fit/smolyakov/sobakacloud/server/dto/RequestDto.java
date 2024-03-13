@@ -8,10 +8,14 @@ import java.io.InputStream;
 import java.util.List;
 
 public class RequestDto {
-    @JsonProperty("entryMethodName")
-    private String entryMethodName;
-    @JsonProperty("args")
-    private List<ArgDto> args;
+    private final String entryMethodName;
+    private final List<ArgDto> args;
+
+    public RequestDto(@JsonProperty("entryMethodName") String entryMethodName,
+                      @JsonProperty("args") List<ArgDto> args) {
+        this.entryMethodName = entryMethodName;
+        this.args = args;
+    }
 
     public static RequestDto deserialize(InputStream stream) {
         try {
