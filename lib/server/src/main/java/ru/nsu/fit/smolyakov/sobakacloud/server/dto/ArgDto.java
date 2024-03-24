@@ -8,10 +8,11 @@ import java.util.Objects;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "argType", visible = true)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = ArgDto.IntegerArgDto.class, name = "int"),
+    @JsonSubTypes.Type(value = ArgDto.IntArgDto.class, name = "int"),
     @JsonSubTypes.Type(value = ArgDto.LongArgDto.class, name = "long"),
     @JsonSubTypes.Type(value = ArgDto.DoubleArgDto.class, name = "double"),
     @JsonSubTypes.Type(value = ArgDto.FloatArgDto.class, name = "float"),
+    @JsonSubTypes.Type(value = ArgDto.ExceptionStringArgDto.class, name = "exceptionString"),
 })
 public abstract class ArgDto {
     private final String argType;
@@ -22,7 +23,7 @@ public abstract class ArgDto {
 
     public static ArgDto argDtoFromValue(Object value, Class<?> clazz) {
         if (clazz.equals(int.class)) {
-            return new IntegerArgDto("int", (int) value);
+            return new IntArgDto("int", (int) value);
         } else if (clazz.equals(long.class)) {
             return new LongArgDto("long", (long) value);
         } else if (clazz.equals(double.class)) {
@@ -38,14 +39,14 @@ public abstract class ArgDto {
 
     public abstract Class<?> getArgValueClass();
 
-//    public static abstract class GenericsDto extends ArgDto {
+//    public static abstract class ArrDto extends ArgDto {
 //        public abstract Class<?> getInnerClass();
-//    } // todo save generic class type. надо или нет???
+//    }
 
-    public static class IntegerArgDto extends ArgDto {
-        int argValue;
+    public static class IntArgDto extends ArgDto {
+        private final int argValue;
 
-        public IntegerArgDto(@JsonProperty("argType") String argType,
+        public IntArgDto(@JsonProperty("argType") String argType,
                              @JsonProperty("argValue") int argValue) {
             super(argType);
             this.argValue = argValue;
@@ -63,7 +64,7 @@ public abstract class ArgDto {
     }
 
     public static class LongArgDto extends ArgDto {
-        long argValue;
+        private final long argValue;
 
         public LongArgDto(@JsonProperty("argType") String argType,
                           @JsonProperty("argValue") long argValue) {
@@ -83,7 +84,7 @@ public abstract class ArgDto {
     }
 
     public static class DoubleArgDto extends ArgDto {
-        double argValue;
+        private final double argValue;
 
         public DoubleArgDto(@JsonProperty("argType") String argType,
                             @JsonProperty("argValue") double argValue) {
@@ -103,7 +104,7 @@ public abstract class ArgDto {
     }
 
     public static class FloatArgDto extends ArgDto {
-        float argValue;
+        private final float argValue;
 
         public FloatArgDto(@JsonProperty("argType") String argType,
                            @JsonProperty("argValue") float argValue) {
@@ -119,6 +120,26 @@ public abstract class ArgDto {
         @Override
         public Class<?> getArgValueClass() {
             return float.class;
+        }
+    }
+
+    public static class ExceptionStringArgDto extends ArgDto {
+        private final String argValue;
+
+        public ExceptionStringArgDto(@JsonProperty("argType") String argType,
+                           @JsonProperty("argValue") String argValue) {
+            super(argType);
+            this.argValue = argValue;
+        }
+
+        @Override
+        public Object getArgValueAsObject() {
+            return argValue;
+        }
+
+        @Override
+        public Class<?> getArgValueClass() {
+            return String.class;
         }
     }
 }

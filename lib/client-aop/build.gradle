@@ -11,6 +11,12 @@ repositories {
 
 dependencies {
     implementation 'org.eclipse.jetty:jetty-client:11.0.20'
+    implementation 'org.eclipse.jetty:jetty-io:11.0.20'
+    implementation 'org.eclipse.jetty:jetty-server:11.0.20'
+    implementation 'org.eclipse.jetty:jetty-servlet:11.0.20'
+    implementation 'org.eclipse.jetty:jetty-util:11.0.20' // под вопросом
+    implementation 'org.eclipse.jetty:jetty-webapp:11.0.20'
+
     implementation 'org.slf4j:slf4j-log4j12:2.0.12' // testImplementation??
 
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.2'
