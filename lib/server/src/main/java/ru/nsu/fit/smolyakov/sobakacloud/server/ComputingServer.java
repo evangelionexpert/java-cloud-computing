@@ -9,6 +9,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.webapp.WebAppContext;
+import ru.nsu.fit.smolyakov.sobakacloud.server.servlets.ResultServlet;
+import ru.nsu.fit.smolyakov.sobakacloud.server.servlets.SubmitServlet;
 
 import java.nio.file.Path;
 
@@ -39,6 +41,7 @@ public class ComputingServer {
         WebAppContext context = new WebAppContext();
         context.setContextPath("/");
         context.setBaseResource(new PathResource(Path.of("unused")));
+        context.setErrorHandler(new JsonErrorHandler());
 
         long maxFileSize = Long.MAX_VALUE;
         long maxRequestSize = Long.MAX_VALUE;
@@ -47,6 +50,8 @@ public class ComputingServer {
         MultipartConfigElement multipartConfig = new MultipartConfigElement(null, maxFileSize, maxRequestSize, fileSizeThreshold);
         ServletHolder holder = context.addServlet(SubmitServlet.class, "/compute/submit");
         holder.getRegistration().setMultipartConfig(multipartConfig);
+
+        context.addServlet(ResultServlet.class, "/compute/result");
 
         server.setHandler(context);
         server.start();

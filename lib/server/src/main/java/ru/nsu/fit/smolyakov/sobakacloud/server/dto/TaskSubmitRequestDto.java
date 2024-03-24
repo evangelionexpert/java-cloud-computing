@@ -17,28 +17,16 @@ public class TaskSubmitRequestDto {
         this.args = args;
     }
 
-    public static TaskSubmitRequestDto deserialize(InputStream stream) {
-        try {
-            return JacksonMappingSingleton.INSTANCE.getMapper().readValue(stream, TaskSubmitRequestDto.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);  // todo custom
-        }
+    public static TaskSubmitRequestDto deserialize(InputStream stream) throws IOException {
+        return JacksonMappingSingleton.INSTANCE.getMapper().readValue(stream, TaskSubmitRequestDto.class);
     }
 
-    public static TaskSubmitRequestDto deserialize(byte[] bytes) {
-        try {
-            return JacksonMappingSingleton.INSTANCE.getMapper().readValue(bytes, TaskSubmitRequestDto.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);  // todo custom
-        }
+    public static TaskSubmitRequestDto deserialize(byte[] bytes) throws IOException {
+        return JacksonMappingSingleton.INSTANCE.getMapper().readValue(bytes, TaskSubmitRequestDto.class);
     }
 
-    public byte[] serialize() {
-        try {
-            return JacksonMappingSingleton.INSTANCE.getWriter().writeValueAsBytes(this);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e); //todo custom
-        }
+    public byte[] serialize() throws JsonProcessingException {
+        return JacksonMappingSingleton.INSTANCE.getWriter().writeValueAsBytes(this);
     }
 
     public String getEntryMethodName() {

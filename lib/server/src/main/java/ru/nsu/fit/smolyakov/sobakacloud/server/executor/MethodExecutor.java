@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,36 +33,26 @@ public enum MethodExecutor {
     }
 
     public abstract static sealed class TaskResult permits TaskResult.Done, TaskResult.InProgress, TaskResult.Failed  {
-        public enum Status {
-            IN_PROCESS,
-            DONE,
-            FAILED
-        };
-
-        private final Status status;
-
-        private TaskResult(Status status) {
-            this.status = status;
-        }
-
-        public Status getStatus() {
-            return status;
-        }
-
         public static final class Done extends TaskResult {
             private final Object result;
             private final Class<?> resultClazz;
 
             private Done(Object result, Class<?> resultClazz) {
-                super(Status.DONE);
                 this.result = result;
                 this.resultClazz = Objects.requireNonNull(resultClazz);
+            }
+
+            public Object getResult() {
+                return result;
+            }
+
+            public Class<?> getResultClazz() {
+                return resultClazz;
             }
         }
 
         public static final class InProgress extends TaskResult {
             private InProgress() {
-                super(Status.IN_PROCESS);
             }
         }
 
@@ -69,7 +60,6 @@ public enum MethodExecutor {
             private final Throwable cause;
 
             private Failed(Throwable cause) {
-                super(Status.FAILED);
                 this.cause = cause;
             }
 
@@ -85,30 +75,30 @@ public enum MethodExecutor {
 
     public long submitMethod(Task req) {
         var future = executor.submit(() -> new TaskResult.Done(req.method.invoke(req.args), req.method.getReturnType()));
-        idToTask.put(id++, future);
-        return id;
+        idToTask.put(id, future);
+        return id++;
     }
 
-    public TaskResult getResult(long id) {
+    public Optional<TaskResult> getResult(long id) {
         var respFuture = idToTask.get(id);
         if (respFuture == null) {
-            throw new RuntimeException("no such task"); // todo custom
+            return Optional.empty();
         }
 
         if (!respFuture.isDone()) {
-            return new TaskResult.InProgress();
+            return Optional.of(new TaskResult.InProgress());
         }
 
         try {
-            return respFuture.get();
+            return Optional.of(respFuture.get());
         } catch (ExecutionException e) {
             if (e.getCause() instanceof InvocationTargetException ite) {
-                return new TaskResult.Failed(ite.getTargetException());
+                return Optional.of(new TaskResult.Failed(ite.getTargetException()));
             } else {
-                return new TaskResult.Failed(e.getCause());
+                return Optional.of(new TaskResult.Failed(e.getCause()));
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e); // todo а че с этим то делать
+        } catch (InterruptedException ignored) {
+            return Optional.empty();
         }
     }
 }
