@@ -5,17 +5,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import ru.nsu.fit.smolyakov.sobakacloud.server.dto.ArgDto;
-import ru.nsu.fit.smolyakov.sobakacloud.server.dto.RequestDto;
-import ru.nsu.fit.smolyakov.sobakacloud.server.dto.ResponseDto;
+import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskSubmitRequestDto;
 import ru.nsu.fit.smolyakov.sobakacloud.server.executor.BytesClassLoader;
+import ru.nsu.fit.smolyakov.sobakacloud.server.executor.MethodExecutor;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 
-public class ComputingServlet extends DefaultServlet {
+public class SubmitServlet extends DefaultServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         var parts = req.getParts();
@@ -40,47 +38,33 @@ public class ComputingServlet extends DefaultServlet {
 
         var bytesClassLoader = new BytesClassLoader();
 
-        RequestDto requestDto = RequestDto.deserialize(requestDtoBytes);
+        TaskSubmitRequestDto taskSubmitRequestDto = TaskSubmitRequestDto.deserialize(requestDtoBytes);
         Class<?> clazz = bytesClassLoader.loadClassFromBytes(classBytes);
 
-        Class<?>[] argTypes = requestDto.getArgs()
+        Class<?>[] argTypes = taskSubmitRequestDto.getArgs()
             .stream()
             .map(ArgDto::getArgValueClass)
             .toArray(Class<?>[]::new);
 
-        Method method = null;
+        Method method;
         try {
-            method = clazz.getMethod(requestDto.getEntryMethodName(), argTypes);
+            method = clazz.getMethod(taskSubmitRequestDto.getEntryMethodName(), argTypes);
         } catch (NoSuchMethodException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "no public method called " + requestDto.getEntryMethodName());
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "no public method called " + taskSubmitRequestDto.getEntryMethodName());
             return;
         }
 
-        Object[] args = requestDto.getArgs()
+        Object[] args = taskSubmitRequestDto.getArgs()
             .stream()
             .map(ArgDto::getArgValueAsObject)
             .toArray(Object[]::new);
 
         if (!Modifier.isStatic(method.getModifiers())) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "method named " + requestDto.getEntryMethodName() + " is not static");
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "method named " + taskSubmitRequestDto.getEntryMethodName() + " is not static");
             return;
         }
 
-        Object res = null;
-//        method.getReturnType();
-        try {
-            res = method.invoke(null, args);
-        } catch (IllegalAccessException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "illegal access");
-            return;
-        } catch (InvocationTargetException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "invocation target exception");
-            return;
-        }
-
-        ArgDto argDto = ArgDto.argDtoFromValue(res, method.getReturnType());
-        ResponseDto responseDto = new ResponseDto(argDto);
-        byte[] responseDtoBytes = responseDto.serialize();
-        resp.getOutputStream().write(responseDtoBytes);
+        long id = MethodExecutor.INSTANCE.submitMethod(new MethodExecutor.Task(method, args));
+        resp.getOutputStream().print(id);
     }
 }

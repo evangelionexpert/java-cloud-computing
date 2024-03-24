@@ -45,7 +45,7 @@ public class ComputingServer {
         int fileSizeThreshold = 2 * 1024 * 1024;// todo мб вынести
 
         MultipartConfigElement multipartConfig = new MultipartConfigElement(null, maxFileSize, maxRequestSize, fileSizeThreshold);
-        ServletHolder holder = context.addServlet(ComputingServlet.class, "/multipart");
+        ServletHolder holder = context.addServlet(SubmitServlet.class, "/compute/submit");
         holder.getRegistration().setMultipartConfig(multipartConfig);
 
         server.setHandler(context);

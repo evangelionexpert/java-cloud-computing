@@ -3,11 +3,8 @@ package ru.nsu.fit.smolyakov.sobakacloud.server.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-public class ResponseDto {
-    public ResponseDto(@JsonProperty("result") ArgDto result) {
+public class TaskResultResponseDto {
+    public TaskResultResponseDto(@JsonProperty("result") ArgDto result) {
         this.result = result;
     }
 
@@ -19,9 +16,9 @@ public class ResponseDto {
         }
     }
 
-    private ArgDto result;
+    private final ArgDto result;
 
     public ArgDto getResult() {
         return result;
-    } // todo exceptions
+    }
 }

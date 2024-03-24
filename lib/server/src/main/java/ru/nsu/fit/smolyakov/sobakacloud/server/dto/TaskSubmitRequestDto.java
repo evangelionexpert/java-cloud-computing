@@ -7,27 +7,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class RequestDto {
+public class TaskSubmitRequestDto {
     private final String entryMethodName;
     private final List<ArgDto> args;
 
-    public RequestDto(@JsonProperty("entryMethodName") String entryMethodName,
-                      @JsonProperty("args") List<ArgDto> args) {
+    public TaskSubmitRequestDto(@JsonProperty("entryMethodName") String entryMethodName,
+                                @JsonProperty("args") List<ArgDto> args) {
         this.entryMethodName = entryMethodName;
         this.args = args;
     }
 
-    public static RequestDto deserialize(InputStream stream) {
+    public static TaskSubmitRequestDto deserialize(InputStream stream) {
         try {
-            return JacksonMappingSingleton.INSTANCE.getMapper().readValue(stream, RequestDto.class);
+            return JacksonMappingSingleton.INSTANCE.getMapper().readValue(stream, TaskSubmitRequestDto.class);
         } catch (IOException e) {
             throw new RuntimeException(e);  // todo custom
         }
     }
 
-    public static RequestDto deserialize(byte[] bytes) {
+    public static TaskSubmitRequestDto deserialize(byte[] bytes) {
         try {
-            return JacksonMappingSingleton.INSTANCE.getMapper().readValue(bytes, RequestDto.class);
+            return JacksonMappingSingleton.INSTANCE.getMapper().readValue(bytes, TaskSubmitRequestDto.class);
         } catch (IOException e) {
             throw new RuntimeException(e);  // todo custom
         }
