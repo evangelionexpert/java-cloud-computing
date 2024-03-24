@@ -1,4 +1,4 @@
-package ru.nsu.fit.smolyakov.sobakacloud.server;
+package ru.nsu.fit.smolyakov.sobakacloud.server.servlets;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +18,10 @@ public class SubmitServlet extends DefaultServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         var parts = req.getParts();
         if (parts.size() != 2) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "only classFile and requestInfo allowed and required");
+            resp.sendError(
+                HttpServletResponse.SC_BAD_REQUEST,
+                "only classFile and requestInfo allowed and required"
+            );
             return;
         }
 
@@ -30,8 +33,10 @@ public class SubmitServlet extends DefaultServlet {
                 case "classFile" -> classBytes = part.getInputStream().readAllBytes();
                 case "requestInfo" -> requestDtoBytes = part.getInputStream().readAllBytes();
                 default -> {
-                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "only classFile and requestInfo allowed and required");
-                    return;
+                    resp.sendError(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "only classFile and requestInfo allowed and required"
+                    ); return;
                 }
             }
         }
@@ -43,15 +48,18 @@ public class SubmitServlet extends DefaultServlet {
 
         Class<?>[] argTypes = taskSubmitRequestDto.getArgs()
             .stream()
-            .map(ArgDto::getArgValueClass)
+            .map(ArgDto::getArgType)
+            .map(ArgDto.Type::getClazz)
             .toArray(Class<?>[]::new);
 
         Method method;
         try {
             method = clazz.getMethod(taskSubmitRequestDto.getEntryMethodName(), argTypes);
         } catch (NoSuchMethodException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "no public method called " + taskSubmitRequestDto.getEntryMethodName());
-            return;
+            resp.sendError(
+                HttpServletResponse.SC_BAD_REQUEST,
+                "no public method named " + taskSubmitRequestDto.getEntryMethodName()
+            ); return;
         }
 
         Object[] args = taskSubmitRequestDto.getArgs()
@@ -60,7 +68,10 @@ public class SubmitServlet extends DefaultServlet {
             .toArray(Object[]::new);
 
         if (!Modifier.isStatic(method.getModifiers())) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "method named " + taskSubmitRequestDto.getEntryMethodName() + " is not static");
+            resp.sendError(
+                HttpServletResponse.SC_BAD_REQUEST,
+                "method named " + taskSubmitRequestDto.getEntryMethodName() + " is not static"
+            );
             return;
         }
 
