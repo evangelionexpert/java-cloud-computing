@@ -5,7 +5,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import ru.nsu.fit.smolyakov.sobakacloud.server.dto.ArgDto;
+import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskResultResponseDto;
 import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskSubmitRequestDto;
+import ru.nsu.fit.smolyakov.sobakacloud.server.exceptions.SobakaExecutionException;
 import ru.nsu.fit.smolyakov.sobakacloud.server.executor.BytesClassLoader;
 import ru.nsu.fit.smolyakov.sobakacloud.server.executor.MethodExecutor;
 
@@ -26,6 +28,7 @@ public class ResultServlet extends DefaultServlet {
             );
             return;
         }
+
         long id;
         try {
             id = Long.parseLong(idString);
@@ -39,22 +42,27 @@ public class ResultServlet extends DefaultServlet {
         var resultOptional = MethodExecutor.INSTANCE.getResult(id);
 
         if (resultOptional.isPresent()) {
-            var result = resultOptional.get();
-            if (result instanceof MethodExecutor.TaskResult.Done done) {
-                System.err.println("saf");
-                ArgDto.Type.fromClass(done.getResultClazz()).ifPresentOrElse(
-                    (argDto) -> {},
-                    () -> {
-                        try {
-                            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "unknown result class, can't serialize");
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                );
+            var res = resultOptional.get();
+            byte[] respDtoBytes = new byte[0];
+
+            if (res instanceof MethodExecutor.TaskResult.Done done) {
+                var argDto = ArgDto.Type
+                    .fromClass(done.getResultClazz())
+                    .get()
+                    .createDto(done.getResult());
+
+                respDtoBytes = new TaskResultResponseDto.Success(argDto)
+                    .serialize();
+            } else if (res instanceof MethodExecutor.TaskResult.Failed failed) {
+                respDtoBytes = new TaskResultResponseDto.Failure(
+                    new SobakaExecutionException(
+                        failed.getCause().toString()
+                    )).serialize();
             } else {
-                System.err.println(((MethodExecutor.TaskResult.Failed) result).getCause().getMessage());
+                respDtoBytes = new TaskResultResponseDto.InProgress().serialize();
             }
+            resp.getOutputStream().write(respDtoBytes);
+            System.err.println(new String(respDtoBytes));
         } else {
             resp.sendError(
                 HttpServletResponse.SC_BAD_REQUEST,

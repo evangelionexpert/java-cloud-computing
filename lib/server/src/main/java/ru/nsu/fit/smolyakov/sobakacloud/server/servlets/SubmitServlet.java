@@ -42,6 +42,12 @@ public class SubmitServlet extends DefaultServlet {
             }
         }
 
+        if (requestDtoBytes == null) {
+            resp.sendError(
+                HttpServletResponse.SC_BAD_REQUEST,
+                "classFile is null (?)"
+            ); return;
+        }
         System.err.println(new String(requestDtoBytes));
 
         var bytesClassLoader = new BytesClassLoader();
@@ -65,11 +71,6 @@ public class SubmitServlet extends DefaultServlet {
             ); return;
         }
 
-        Object[] args = taskSubmitRequestDto.getArgs()
-            .stream()
-            .map(ArgDto::getArgValueAsObject)
-            .toArray(Object[]::new);
-
         if (!Modifier.isStatic(method.getModifiers())) {
             resp.sendError(
                 HttpServletResponse.SC_BAD_REQUEST,
@@ -77,6 +78,19 @@ public class SubmitServlet extends DefaultServlet {
             );
             return;
         }
+
+        if (ArgDto.Type.fromClass(method.getReturnType()).isEmpty()) {
+            resp.sendError(
+                HttpServletResponse.SC_BAD_REQUEST,
+                "method named " + taskSubmitRequestDto.getEntryMethodName() + " has unsupported return type"
+            );
+            return;
+        }
+
+        Object[] args = taskSubmitRequestDto.getArgs()
+            .stream()
+            .map(ArgDto::getArgValueAsObject)
+            .toArray(Object[]::new);
 
         long id = MethodExecutor.INSTANCE.submitMethod(new MethodExecutor.Task(method, args));
         resp.getOutputStream().print(String.valueOf(id));
