@@ -1,5 +1,6 @@
 package ru.nsu.fit.smolyakov.sobakacloud.server.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -66,67 +67,50 @@ public abstract class ArgDto {
         this.argType = argType;
     }
 
+    @JsonProperty("argValue")
+    private Object argValue;
+
+    protected void setArgValue(Object o) {
+        this.argValue = o;
+    }
+
+    @JsonProperty("argType")
     private final Type argType;
 
     public Type getArgType() {
         return argType;
     }
 
-    public abstract Object getArgValueAsObject();
+    @JsonIgnore
+    public Object getArgValueAsObject() {
+        return argValue;
+    }
 
     public static class IntArgDto extends ArgDto {
-        private final int argValue;
-
         public IntArgDto(@JsonProperty("argValue") int argValue) {
             super(Type.INT);
-            this.argValue = argValue;
-        }
-
-        @Override
-        public Object getArgValueAsObject() {
-            return argValue;
+            setArgValue(argValue);
         }
     }
 
     public static class LongArgDto extends ArgDto {
-        private final long argValue;
-
         public LongArgDto(@JsonProperty("argValue") long argValue) {
             super(Type.LONG);
-            this.argValue = argValue;
-        }
-
-        @Override
-        public Object getArgValueAsObject() {
-            return argValue;
+            setArgValue(argValue);
         }
     }
 
     public static class DoubleArgDto extends ArgDto {
-        private final double argValue;
-
         public DoubleArgDto(@JsonProperty("argValue") double argValue) {
             super(Type.DOUBLE);
-            this.argValue = argValue;
-        }
-
-        @Override
-        public Object getArgValueAsObject() {
-            return argValue;
+            setArgValue(argValue);
         }
     }
 
     public static class FloatArgDto extends ArgDto {
-        private final float argValue;
-
         public FloatArgDto(@JsonProperty("argValue") float argValue) {
             super(Type.FLOAT);
-            this.argValue = argValue;
-        }
-
-        @Override
-        public Object getArgValueAsObject() {
-            return argValue;
+            setArgValue(argValue);
         }
     }
 }

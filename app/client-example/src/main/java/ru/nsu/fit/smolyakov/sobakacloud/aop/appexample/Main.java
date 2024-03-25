@@ -1,14 +1,19 @@
 package ru.nsu.fit.smolyakov.sobakacloud.aop.appexample;
 
-import ru.nsu.fit.smolyakov.sobakacloud.aop.ClientSendTest;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.HttpCloudComputingClient;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class Main {
-    public static void main(String[] args) {
-        var cla = new ClientSendTest();
+    public static void main(String[] args) throws URISyntaxException, IOException {
         try {
-            cla.a();
+            double c = ClassToCalculateSobakaCloud.mememe(4, 6);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+//        var a = Thread.currentThread().getContextClassLoader().getResource("ru/nsu/fit/smolyakov/sobakacloud/aop/appexample/Main.class");
+//        System.err.println(a);
     }
 }

@@ -12,6 +12,7 @@ import ru.nsu.fit.smolyakov.sobakacloud.server.executor.MethodExecutor;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 
 public class SubmitServlet extends DefaultServlet {
     @Override
@@ -40,6 +41,8 @@ public class SubmitServlet extends DefaultServlet {
                 }
             }
         }
+
+        System.err.println(new String(requestDtoBytes));
 
         var bytesClassLoader = new BytesClassLoader();
 
@@ -76,6 +79,6 @@ public class SubmitServlet extends DefaultServlet {
         }
 
         long id = MethodExecutor.INSTANCE.submitMethod(new MethodExecutor.Task(method, args));
-        resp.getOutputStream().print(id);
+        resp.getOutputStream().print(String.valueOf(id));
     }
 }

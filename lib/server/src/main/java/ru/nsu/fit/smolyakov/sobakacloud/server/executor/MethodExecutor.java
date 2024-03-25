@@ -1,5 +1,7 @@
 package ru.nsu.fit.smolyakov.sobakacloud.server.executor;
 
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -13,6 +15,8 @@ import java.util.concurrent.Future;
 
 public enum MethodExecutor {
     INSTANCE;
+
+    private static final Logger log = Logger.getLogger(MethodExecutor.class.getName());
 
     public static class Task {
         private final Method method;
@@ -70,11 +74,33 @@ public enum MethodExecutor {
     }
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final Map<Long, Future<TaskResult.Done>> idToTask = new HashMap<>();
+    private final Map<Long, Future<TaskResult>> idToTask = new HashMap<>();
     private long id = 0;
 
+    private TaskResult executorTask(Task req, long id) throws InvocationTargetException, IllegalAccessException {
+        log.info("(id %d) new task: %s".formatted(id, req.method.toGenericString()));
+        Object res;
+
+        try {
+            res = req.method.invoke(null, req.args);
+        } catch (InvocationTargetException e){
+            log.info(
+                "(id %d) underlying method exception: %s (%s)"
+                    .formatted(id, e.getTargetException().toString(), e.getTargetException().getMessage()));
+            return new TaskResult.Failed(e.getTargetException());
+        } catch (Exception e) {
+            log.info(
+                "(id %d) exception: %s (%s)"
+                    .formatted(id, e.toString(), e.getMessage()));
+            return new TaskResult.Failed(e);
+        }
+
+        log.info("(id %d) task done".formatted(id));
+        return new TaskResult.Done(res, req.method.getReturnType());
+    }
+
     public long submitMethod(Task req) {
-        var future = executor.submit(() -> new TaskResult.Done(req.method.invoke(req.args), req.method.getReturnType()));
+        var future = executor.submit(() -> executorTask(req, id));
         idToTask.put(id, future);
         return id++;
     }
@@ -91,14 +117,10 @@ public enum MethodExecutor {
 
         try {
             return Optional.of(respFuture.get());
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof InvocationTargetException ite) {
-                return Optional.of(new TaskResult.Failed(ite.getTargetException()));
-            } else {
-                return Optional.of(new TaskResult.Failed(e.getCause()));
-            }
         } catch (InterruptedException ignored) {
             return Optional.empty();
+        } catch (ExecutionException e) {
+            return Optional.of(new TaskResult.Failed(e));
         }
     }
 }
