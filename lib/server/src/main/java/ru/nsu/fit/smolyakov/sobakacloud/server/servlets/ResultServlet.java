@@ -41,6 +41,7 @@ public class ResultServlet extends DefaultServlet {
         if (resultOptional.isPresent()) {
             var result = resultOptional.get();
             if (result instanceof MethodExecutor.TaskResult.Done done) {
+                System.err.println("saf");
                 ArgDto.Type.fromClass(done.getResultClazz()).ifPresentOrElse(
                     (argDto) -> {},
                     () -> {
@@ -51,6 +52,8 @@ public class ResultServlet extends DefaultServlet {
                         }
                     }
                 );
+            } else {
+                System.err.println(((MethodExecutor.TaskResult.Failed) result).getCause().getMessage());
             }
         } else {
             resp.sendError(

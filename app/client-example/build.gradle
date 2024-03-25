@@ -25,3 +25,12 @@ test {
     dependsOn cleanTest
     testLogging.showStandardStreams = true
 }
+
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
+                'Main-Class': 'ru.nsu.fit.smolyakov.sobakacloud.aop.appexample.Main'
+        )
+    }
+}
