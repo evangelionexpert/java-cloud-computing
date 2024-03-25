@@ -87,11 +87,9 @@ public enum MethodExecutor {
             log.info(
                 "(id %d) underlying method exception: %s (%s)"
                     .formatted(id, e.getTargetException().toString(), e.getTargetException().getMessage()));
-            return new TaskResult.Failed(e.getTargetException());
+            return new TaskResult.Failed(e.getCause());
         } catch (Exception e) {
-            log.info(
-                "(id %d) exception: %s (%s)"
-                    .formatted(id, e.toString(), e.getMessage()));
+            log.info("(id %d) exception: %s".formatted(id, e.toString()));
             return new TaskResult.Failed(e);
         }
 
@@ -100,9 +98,10 @@ public enum MethodExecutor {
     }
 
     public long submitMethod(Task req) {
+        id++;
         var future = executor.submit(() -> executorTask(req, id));
         idToTask.put(id, future);
-        return id++;
+        return id;
     }
 
     public Optional<TaskResult> getResult(long id) {

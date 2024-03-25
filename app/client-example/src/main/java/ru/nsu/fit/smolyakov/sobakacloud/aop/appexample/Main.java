@@ -9,6 +9,7 @@ public class Main {
     public static void main(String[] args) throws URISyntaxException, IOException {
         try {
             double c = ClassToCalculateSobakaCloud.mememe(4, 6);
+            System.err.println(c);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

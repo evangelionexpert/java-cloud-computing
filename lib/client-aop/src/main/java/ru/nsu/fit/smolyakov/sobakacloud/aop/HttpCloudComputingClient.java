@@ -1,5 +1,6 @@
 package ru.nsu.fit.smolyakov.sobakacloud.aop;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.BytesRequestContent;
@@ -7,15 +8,12 @@ import org.eclipse.jetty.client.util.MultiPartRequestContent;
 import org.eclipse.jetty.http.HttpMethod;
 import ru.nsu.fit.smolyakov.sobakacloud.aop.util.Util;
 import ru.nsu.fit.smolyakov.sobakacloud.server.dto.ArgDto;
+import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskResultResponseDto;
 import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskSubmitRequestDto;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
@@ -26,9 +24,8 @@ public class HttpCloudComputingClient {
                               List<Class<?>> argTypes,
                               List<Object> args,
                               Class<?> retType,
-                              long pollingIntervalMillis)
-        throws IOException, ClassNotFoundException {
-
+                              long startPollingIntervalMillis,
+                              long pollingIntervalMillis) {
         if (Objects.requireNonNull(argTypes).size() != Objects.requireNonNull(args).size()) {
             throw new IllegalArgumentException();
         }
@@ -40,12 +37,22 @@ public class HttpCloudComputingClient {
                     .createDto(args.get(i))
             ).toList();
 
-        var requestDtoBytes = new TaskSubmitRequestDto(
-            methodName,
-            argDtos
-        ).serialize();
+        byte[] requestDtoBytes;
+        try {
+            requestDtoBytes = new TaskSubmitRequestDto(
+                methodName,
+                argDtos
+            ).serialize();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
-        var clazzBytes = Util.getClassFileBytes(clazz);
+        byte[] clazzBytes;
+        try {
+            clazzBytes = Util.getClassFileBytes(clazz);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         MultiPartRequestContent multiPart = new MultiPartRequestContent();
         multiPart.addFieldPart("classFile", new BytesRequestContent(clazzBytes), null);
@@ -53,33 +60,42 @@ public class HttpCloudComputingClient {
         multiPart.close();
 
         HttpClient httpClient = new HttpClient();
-
+        TaskResultResponseDto resultDto;
         try {
             httpClient.start();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
 
-        ContentResponse response;
+            ContentResponse response;
 
-        try {
             response = httpClient.newRequest("http://localhost:8080/compute/submit")
                 .method(HttpMethod.POST)
                 .body(multiPart)
                 .send();
-        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+
+            long id = Long.parseLong(response.getContentAsString());
+
+            Thread.sleep(Long.max(0, startPollingIntervalMillis - pollingIntervalMillis));
+            do {
+                Thread.sleep(pollingIntervalMillis);
+                response = httpClient.newRequest("http://localhost:8080/compute/result?id=" + id)
+                    .method(HttpMethod.GET)
+                    .send();
+
+                resultDto = TaskResultResponseDto.deserialize(response.getContentAsString());
+            } while (resultDto.getStatus().equals(TaskResultResponseDto.Status.IN_PROCESS));
+        } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                httpClient.stop();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
-        long id = Long.parseLong(response.getContentAsString());
-        try {
-            response = httpClient.newRequest("http://localhost:8080/compute/result?id=" + id)
-                .method(HttpMethod.GET)
-                .send();
-        } catch (InterruptedException | TimeoutException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-
-        return (double) 5;
+        return switch (resultDto.getStatus()) {
+            case SUCCESS -> ((TaskResultResponseDto.Success) resultDto).getArgDto().getArgValueAsObject();
+            case FAILURE -> throw ((TaskResultResponseDto.Failure) resultDto).getSobakaExecutionException();
+            case IN_PROCESS -> throw new IllegalStateException("not possible");
+        };
     }
 }

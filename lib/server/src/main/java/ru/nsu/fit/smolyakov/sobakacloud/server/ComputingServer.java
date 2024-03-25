@@ -18,7 +18,7 @@ public class ComputingServer {
     public final static int DEFAULT_PORT = 8080;
     public final static int DEFAULT_COMPUTING_TIMEOUT = 0;
     private final int port;
-    private final int computingTimeout;
+    private final int computingTimeout; // todo ignored
 
     private ComputingServer(int port, int computingTimeout) {
         this.port = port;
@@ -45,7 +45,7 @@ public class ComputingServer {
 
         long maxFileSize = Long.MAX_VALUE;
         long maxRequestSize = Long.MAX_VALUE;
-        int fileSizeThreshold = 2 * 1024 * 1024;// todo мб вынести
+        int fileSizeThreshold = 2 * 1024 * 1024;
 
         MultipartConfigElement multipartConfig = new MultipartConfigElement(null, maxFileSize, maxRequestSize, fileSizeThreshold);
         ServletHolder holder = context.addServlet(SubmitServlet.class, "/compute/submit");

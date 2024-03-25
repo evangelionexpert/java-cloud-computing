@@ -14,9 +14,10 @@ public class ClassToCalculateSobakaCloud {
                 List.of(double.class, double.class),
                 List.of(a, b),
                 double.class,
+                1000,
                 1000
             );
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
