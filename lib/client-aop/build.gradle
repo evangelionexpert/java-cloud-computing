@@ -12,6 +12,9 @@ repositories {
 dependencies {
     implementation project(':lib:server')
 
+    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+    implementation 'com.google.auto.service:auto-service:1.1.1'
+
     implementation 'org.eclipse.jetty:jetty-client:11.0.20'
     implementation 'org.eclipse.jetty:jetty-io:11.0.20'
     implementation 'org.eclipse.jetty:jetty-server:11.0.20'

@@ -12,6 +12,7 @@ repositories {
 }
 
 dependencies {
+    annotationProcessor project(':lib:client-aop')
     implementation project(':lib:client-aop')
     implementation 'org.slf4j:slf4j-log4j12:2.0.12'
 
