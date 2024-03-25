@@ -13,8 +13,5 @@ public class Main {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-//        var a = Thread.currentThread().getContextClassLoader().getResource("ru/nsu/fit/smolyakov/sobakacloud/aop/appexample/Main.class");
-//        System.err.println(a);
     }
 }

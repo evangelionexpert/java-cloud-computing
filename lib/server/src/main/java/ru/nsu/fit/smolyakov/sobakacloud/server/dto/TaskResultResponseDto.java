@@ -7,12 +7,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import ru.nsu.fit.smolyakov.sobakacloud.server.exceptions.SobakaExecutionException;
+import ru.nsu.fit.smolyakov.sobakacloud.server.exceptions.SobakaUnderlyingMethodExecutionException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
-import java.util.Optional;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "status", visible = true)
 @JsonSubTypes({
@@ -71,15 +70,15 @@ public abstract sealed class TaskResultResponseDto
     }
 
     public static final class Failure extends TaskResultResponseDto {
-        private final SobakaExecutionException sobakaExecutionException;
+        private final SobakaUnderlyingMethodExecutionException exception;
 
-        public Failure(@JsonProperty("exception") SobakaExecutionException sobakaExecutionException) {
+        public Failure(@JsonProperty("exception") SobakaUnderlyingMethodExecutionException exception) {
             super(Status.FAILURE);
-            this.sobakaExecutionException = sobakaExecutionException;
+            this.exception = exception;
         }
 
-        public SobakaExecutionException getSobakaExecutionException() {
-            return sobakaExecutionException;
+        public SobakaUnderlyingMethodExecutionException getSobakaExecutionException() {
+            return exception;
         }
     }
 

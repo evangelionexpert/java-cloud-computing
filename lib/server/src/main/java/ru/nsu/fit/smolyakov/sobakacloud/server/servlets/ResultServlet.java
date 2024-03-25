@@ -6,16 +6,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import ru.nsu.fit.smolyakov.sobakacloud.server.dto.ArgDto;
 import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskResultResponseDto;
-import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskSubmitRequestDto;
-import ru.nsu.fit.smolyakov.sobakacloud.server.exceptions.SobakaExecutionException;
-import ru.nsu.fit.smolyakov.sobakacloud.server.executor.BytesClassLoader;
+import ru.nsu.fit.smolyakov.sobakacloud.server.exceptions.SobakaUnderlyingMethodExecutionException;
 import ru.nsu.fit.smolyakov.sobakacloud.server.executor.MethodExecutor;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.function.Consumer;
 
 public class ResultServlet extends DefaultServlet {
     @Override
@@ -55,7 +49,7 @@ public class ResultServlet extends DefaultServlet {
                     .serialize();
             } else if (res instanceof MethodExecutor.TaskResult.Failed failed) {
                 respDtoBytes = new TaskResultResponseDto.Failure(
-                    new SobakaExecutionException(
+                    new SobakaUnderlyingMethodExecutionException(
                         failed.getCause().toString()
                     )).serialize();
             } else {
