@@ -11,6 +11,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface SobakaCloudCompute {
     String server();
+
     String targetShortClassName() default CloudComputeProcessor.EMPTY_VALUE;
+
     String targetPackage() default CloudComputeProcessor.EMPTY_VALUE;
 }

@@ -14,8 +14,6 @@ import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskSubmitRequestDto;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 public class HttpCloudComputingClient {

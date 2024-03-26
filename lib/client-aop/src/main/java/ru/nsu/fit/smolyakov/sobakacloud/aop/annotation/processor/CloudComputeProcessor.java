@@ -74,23 +74,20 @@ public class CloudComputeProcessor extends AbstractProcessor {
             }
         }
 
-        StringBuilder res = new StringBuilder();
-        res.append("package ").append(classInfo.targetPackage).append(";\n");
+        String res = "package " + classInfo.targetPackage + ";\n" +
+            "public class " + classInfo.targetShortClassName + " {\n" +
+            "public static " + classInfo.returnType + " " + classInfo.targetEntryMethodName +
+            "(" + typesAndArgs + ") {\n" +
+            "return (" + classInfo.returnType + ") " + HTTP_CLIENT_QUALIFIED_METHOD_NAME + "(\n" +
+            classInfo.sourcePackage + "." + classInfo.sourceShortClassName + ".class,\n" +
+            "\"" + classInfo.sourceEntryMethodName + "\",\n" +
+            "java.util.List.of(" + types + "),\n" +
+            "java.util.List.of(" + argNames + "),\n" +
+            classInfo.returnType + ".class,\n" +
+            classInfo.sleepBeforePollingMillis + ", " + classInfo.pollingIntervalMillis + ");\n" +
+            "}\n}\n";
 
-        res.append("public class ").append(classInfo.targetShortClassName).append(" {\n");
-        res.append("public static ").append(classInfo.returnType).append(" ").append(classInfo.targetEntryMethodName)
-            .append("(").append(typesAndArgs).append(") {\n");
-
-        res.append("return (").append(classInfo.returnType).append(") ").append(HTTP_CLIENT_QUALIFIED_METHOD_NAME).append("(\n");
-        res.append(classInfo.sourcePackage).append(".").append(classInfo.sourceShortClassName).append(".class,\n");
-        res.append("\"").append(classInfo.sourceEntryMethodName).append("\",\n");
-        res.append("java.util.List.of(").append(types).append("),\n");
-        res.append("java.util.List.of(").append(argNames).append("),\n");
-        res.append(classInfo.returnType).append(".class,\n");
-        res.append(classInfo.sleepBeforePollingMillis).append(", ").append(classInfo.pollingIntervalMillis).append(");\n");
-        res.append("}\n}\n");
-
-        return res.toString();
+        return res;
     }
 
     private Element findElementByName(
@@ -111,18 +108,6 @@ public class CloudComputeProcessor extends AbstractProcessor {
         }
         return maybeAnnotation.get();
     }
-
-    private record AllElements(
-        TypeElement computeClassAnnotationElement,
-        ExecutableElement serverAddressElement,
-        ExecutableElement targetShortClassNameElement,
-        ExecutableElement targetPackageElement,
-
-        TypeElement entryMethodAnnotationElement,
-        ExecutableElement targetEntryMethodNameElement,
-        ExecutableElement sleepBeforePollingMillisElement,
-        ExecutableElement pollingIntervalMillisElement
-    ) {}
 
     private AllElements parseAllElements(Set<? extends TypeElement> annotations) {
         TypeElement computeClassAnnotationElement =
@@ -207,11 +192,6 @@ public class CloudComputeProcessor extends AbstractProcessor {
         );
     }
 
-    private record AnnotatedMethod(
-        AnnotationMirror annotationMirror,
-        ExecutableElement element
-    ) {}
-
     private AnnotatedMethod findAnnotatedMethod(TypeElement classElement, TypeElement entryMethodAnnotationElement) {
         AnnotationMirror annotatedMethodAnnotationMirror = null;
         ExecutableElement annotatedMethodElement = null;
@@ -248,25 +228,6 @@ public class CloudComputeProcessor extends AbstractProcessor {
 
         return new AnnotatedMethod(annotatedMethodAnnotationMirror, annotatedMethodElement);
     }
-
-    private record Param(
-        String paramType,
-        String paramName
-    ) {
-    }
-
-    private record ClassInfo(
-        String returnType,
-        String sourcePackage,
-        String sourceShortClassName,
-        String targetPackage,
-        String targetShortClassName,
-        String sourceEntryMethodName,
-        String targetEntryMethodName,
-        List<Param> params,
-        int sleepBeforePollingMillis,
-        int pollingIntervalMillis
-    ) {}
 
     private Object getElementValueFromAnnotationMirror(AnnotationMirror annotationMirror, ExecutableElement e) {
         AnnotationValue value = annotationMirror.getElementValues().get(e);
@@ -327,7 +288,7 @@ public class CloudComputeProcessor extends AbstractProcessor {
                 new Param(
                     param.asType().toString(),
                     param.getSimpleName().toString()
-                    )
+                )
             ).toList();
 
         return new ClassInfo(
@@ -429,5 +390,44 @@ public class CloudComputeProcessor extends AbstractProcessor {
             }
         }
         return true;
+    }
+
+    private record AllElements(
+        TypeElement computeClassAnnotationElement,
+        ExecutableElement serverAddressElement,
+        ExecutableElement targetShortClassNameElement,
+        ExecutableElement targetPackageElement,
+
+        TypeElement entryMethodAnnotationElement,
+        ExecutableElement targetEntryMethodNameElement,
+        ExecutableElement sleepBeforePollingMillisElement,
+        ExecutableElement pollingIntervalMillisElement
+    ) {
+    }
+
+    private record AnnotatedMethod(
+        AnnotationMirror annotationMirror,
+        ExecutableElement element
+    ) {
+    }
+
+    private record Param(
+        String paramType,
+        String paramName
+    ) {
+    }
+
+    private record ClassInfo(
+        String returnType,
+        String sourcePackage,
+        String sourceShortClassName,
+        String targetPackage,
+        String targetShortClassName,
+        String sourceEntryMethodName,
+        String targetEntryMethodName,
+        List<Param> params,
+        int sleepBeforePollingMillis,
+        int pollingIntervalMillis
+    ) {
     }
 }

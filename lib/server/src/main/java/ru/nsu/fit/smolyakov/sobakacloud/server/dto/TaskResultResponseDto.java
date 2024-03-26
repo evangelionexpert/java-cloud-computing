@@ -22,21 +22,23 @@ import java.util.Objects;
 public abstract sealed class TaskResultResponseDto
     permits TaskResultResponseDto.Failure, TaskResultResponseDto.InProgress, TaskResultResponseDto.Success {
 
+    private final Status status;
+
     private TaskResultResponseDto(@JsonProperty("status") Status status) {
         this.status = status;
+    }
+
+    public static TaskResultResponseDto deserialize(InputStream stream) throws IOException {
+        return JacksonMappingSingleton.INSTANCE.getMapper().readValue(stream, TaskResultResponseDto.class);
+    }
+
+    public static TaskResultResponseDto deserialize(String s) throws IOException {
+        return JacksonMappingSingleton.INSTANCE.getMapper().readValue(s, TaskResultResponseDto.class);
     }
 
     public Status getStatus() {
         return status;
     }
-
-    public enum Status {
-        @JsonProperty("success") SUCCESS,
-        @JsonProperty("failure") FAILURE,
-        @JsonProperty("inProgress") IN_PROCESS
-    }
-
-    private final Status status;
 
     public byte[] serialize() throws JsonProcessingException {
 
@@ -48,12 +50,10 @@ public abstract sealed class TaskResultResponseDto
         return JacksonMappingSingleton.INSTANCE.getWriter().with(filters).writeValueAsBytes(this);
     }
 
-    public static TaskResultResponseDto deserialize(InputStream stream) throws IOException {
-        return JacksonMappingSingleton.INSTANCE.getMapper().readValue(stream, TaskResultResponseDto.class);
-    }
-
-    public static TaskResultResponseDto deserialize(String s) throws IOException {
-        return JacksonMappingSingleton.INSTANCE.getMapper().readValue(s, TaskResultResponseDto.class);
+    public enum Status {
+        @JsonProperty("success") SUCCESS,
+        @JsonProperty("failure") FAILURE,
+        @JsonProperty("inProgress") IN_PROCESS
     }
 
     public static final class Success extends TaskResultResponseDto {

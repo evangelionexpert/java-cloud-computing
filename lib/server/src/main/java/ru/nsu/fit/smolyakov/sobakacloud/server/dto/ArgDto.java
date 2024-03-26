@@ -17,14 +17,34 @@ import java.util.function.Function;
     @JsonSubTypes.Type(value = ArgDto.FloatArgDto.class, name = "float"),
 })
 public abstract class ArgDto {
+    @JsonProperty("argType")
+    private final Type argType;
+    @JsonProperty("argValue")
+    private Object argValue;
+
+    private ArgDto(@JsonProperty("argType") Type argType) {
+        this.argType = argType;
+    }
+
+    protected void setArgValue(Object o) {
+        this.argValue = o;
+    }
+
+    public Type getArgType() {
+        return argType;
+    }
+
+    @JsonIgnore
+    public Object getArgValueAsObject() {
+        return argValue;
+    }
+
     public enum Type {
         @JsonProperty("int") INT(int.class, (Object value) -> new IntArgDto((int) value)),
         @JsonProperty("long") LONG(long.class, (Object value) -> new LongArgDto((long) value)),
         @JsonProperty("double") DOUBLE(double.class, (Object value) -> new DoubleArgDto((double) value)),
         @JsonProperty("float") FLOAT(float.class, (Object value) -> new FloatArgDto((float) value));
 
-        private final Function<Object, ArgDto> function;
-        private Class<?> clazz;
         private final static Map<String, Type> namesMap =
             Map.of(
                 "int", INT,
@@ -32,7 +52,6 @@ public abstract class ArgDto {
                 "double", DOUBLE,
                 "float", FLOAT
             );
-
         private final static Map<Class<?>, Type> classesMap =
             Map.of(
                 int.class, INT,
@@ -40,18 +59,12 @@ public abstract class ArgDto {
                 double.class, DOUBLE,
                 float.class, FLOAT
             );
+        private final Function<Object, ArgDto> function;
+        private final Class<?> clazz;
 
         Type(Class<?> clazz, Function<Object, ArgDto> function) {
             this.clazz = clazz;
             this.function = function;
-        }
-
-        public Class<?> getClazz() {
-            return clazz;
-        }
-
-        public ArgDto createDto(Object value) {
-            return function.apply(value);
         }
 
         public static Optional<Type> fromString(String s) {
@@ -61,29 +74,14 @@ public abstract class ArgDto {
         public static Optional<Type> fromClass(Class<?> clazz) {
             return Optional.ofNullable(Type.classesMap.get(clazz));
         }
-    }
 
-    private ArgDto(@JsonProperty("argType") Type argType) {
-        this.argType = argType;
-    }
+        public Class<?> getClazz() {
+            return clazz;
+        }
 
-    @JsonProperty("argValue")
-    private Object argValue;
-
-    protected void setArgValue(Object o) {
-        this.argValue = o;
-    }
-
-    @JsonProperty("argType")
-    private final Type argType;
-
-    public Type getArgType() {
-        return argType;
-    }
-
-    @JsonIgnore
-    public Object getArgValueAsObject() {
-        return argValue;
+        public ArgDto createDto(Object value) {
+            return function.apply(value);
+        }
     }
 
     public static class IntArgDto extends ArgDto {
