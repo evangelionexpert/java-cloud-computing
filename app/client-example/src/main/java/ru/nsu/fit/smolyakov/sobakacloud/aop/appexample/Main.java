@@ -1,7 +1,5 @@
 package ru.nsu.fit.smolyakov.sobakacloud.aop.appexample;
 
-import ru.nsu.fit.smolyakov.sobakacloud.aop.HttpCloudComputingClient;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 

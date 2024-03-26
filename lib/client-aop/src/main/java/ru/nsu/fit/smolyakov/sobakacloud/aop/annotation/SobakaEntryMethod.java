@@ -12,6 +12,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface SobakaEntryMethod {
     String targetName() default CloudComputeProcessor.EMPTY_VALUE;
+
     int pollingIntervalMillis() default HttpCloudComputingClient.DEFAULT_POLLING_INTERVAL_MILLIS;
+
     int sleepBeforePollingMillis() default HttpCloudComputingClient.DEFAULT_SLEEP_BEFORE_POLLING_MILLIS;
 }

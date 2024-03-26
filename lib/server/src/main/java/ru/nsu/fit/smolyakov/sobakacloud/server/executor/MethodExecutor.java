@@ -17,62 +17,6 @@ public enum MethodExecutor {
     INSTANCE;
 
     private static final Logger log = Logger.getLogger(MethodExecutor.class.getName());
-
-    public static class Task {
-        private final Method method;
-        private final Object[] args;
-
-        public Task(Method method, Object[] args) {
-            this.method = Objects.requireNonNull(method);
-            this.args = Objects.requireNonNull(args);
-        }
-
-        public Method getMethod() {
-            return method;
-        }
-
-        public Object[] getArgs() {
-            return args;
-        }
-    }
-
-    public abstract static sealed class TaskResult permits TaskResult.Done, TaskResult.InProgress, TaskResult.Failed  {
-        public static final class Done extends TaskResult {
-            private final Object result;
-            private final Class<?> resultClazz;
-
-            private Done(Object result, Class<?> resultClazz) {
-                this.result = result;
-                this.resultClazz = Objects.requireNonNull(resultClazz);
-            }
-
-            public Object getResult() {
-                return result;
-            }
-
-            public Class<?> getResultClazz() {
-                return resultClazz;
-            }
-        }
-
-        public static final class InProgress extends TaskResult {
-            private InProgress() {
-            }
-        }
-
-        public static final class Failed extends TaskResult {
-            private final Throwable cause;
-
-            private Failed(Throwable cause) {
-                this.cause = cause;
-            }
-
-            public Throwable getCause() {
-                return cause;
-            }
-        }
-    }
-
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Map<Long, Future<TaskResult>> idToTask = new HashMap<>();
     private long id = 0;
@@ -83,7 +27,7 @@ public enum MethodExecutor {
 
         try {
             res = req.method.invoke(null, req.args);
-        } catch (InvocationTargetException e){
+        } catch (InvocationTargetException e) {
             log.info(
                 "(id %d) underlying method exception: %s (%s)"
                     .formatted(id, e.getTargetException().toString(), e.getTargetException().getMessage()));
@@ -120,6 +64,61 @@ public enum MethodExecutor {
             return Optional.empty();
         } catch (ExecutionException e) {
             return Optional.of(new TaskResult.Failed(e));
+        }
+    }
+
+    public static class Task {
+        private final Method method;
+        private final Object[] args;
+
+        public Task(Method method, Object[] args) {
+            this.method = Objects.requireNonNull(method);
+            this.args = Objects.requireNonNull(args);
+        }
+
+        public Method getMethod() {
+            return method;
+        }
+
+        public Object[] getArgs() {
+            return args;
+        }
+    }
+
+    public abstract static sealed class TaskResult permits TaskResult.Done, TaskResult.InProgress, TaskResult.Failed {
+        public static final class Done extends TaskResult {
+            private final Object result;
+            private final Class<?> resultClazz;
+
+            private Done(Object result, Class<?> resultClazz) {
+                this.result = result;
+                this.resultClazz = Objects.requireNonNull(resultClazz);
+            }
+
+            public Object getResult() {
+                return result;
+            }
+
+            public Class<?> getResultClazz() {
+                return resultClazz;
+            }
+        }
+
+        public static final class InProgress extends TaskResult {
+            private InProgress() {
+            }
+        }
+
+        public static final class Failed extends TaskResult {
+            private final Throwable cause;
+
+            private Failed(Throwable cause) {
+                this.cause = cause;
+            }
+
+            public Throwable getCause() {
+                return cause;
+            }
         }
     }
 }

@@ -12,7 +12,6 @@ import ru.nsu.fit.smolyakov.sobakacloud.server.executor.MethodExecutor;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 
 public class SubmitServlet extends DefaultServlet {
     @Override
@@ -37,7 +36,8 @@ public class SubmitServlet extends DefaultServlet {
                     resp.sendError(
                         HttpServletResponse.SC_BAD_REQUEST,
                         "only classFile and requestInfo allowed and required"
-                    ); return;
+                    );
+                    return;
                 }
             }
         }
@@ -46,7 +46,8 @@ public class SubmitServlet extends DefaultServlet {
             resp.sendError(
                 HttpServletResponse.SC_BAD_REQUEST,
                 "classFile is null (?)"
-            ); return;
+            );
+            return;
         }
         System.err.println(new String(requestDtoBytes));
 
@@ -68,7 +69,8 @@ public class SubmitServlet extends DefaultServlet {
             resp.sendError(
                 HttpServletResponse.SC_BAD_REQUEST,
                 "no public method named " + taskSubmitRequestDto.getEntryMethodName()
-            ); return;
+            );
+            return;
         }
 
         if (!Modifier.isStatic(method.getModifiers())) {

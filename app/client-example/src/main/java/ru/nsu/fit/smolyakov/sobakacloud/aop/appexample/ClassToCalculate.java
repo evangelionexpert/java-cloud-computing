@@ -8,6 +8,6 @@ public class ClassToCalculate {
     @SobakaEntryMethod
     public static double mememe(double a, double b) {
 //        throw new IllegalArgumentException("eblo");
-        return a+b;
+        return a + b;
     }
 }
