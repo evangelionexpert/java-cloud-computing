@@ -8,7 +8,7 @@ import java.util.List;
 public class ClassToCalculateSobakaCloud {
     public static double mememe(double a, double b) {
         return (double) HttpCloudComputingClient.send(
-            ClassToCalculate.class,
+            ru.nsu.fit.smolyakov.sobakacloud.aop.appexample.ClassToCalculate.class,
             "mememe",
             List.of(double.class, double.class),
             List.of(a, b),

@@ -19,12 +19,15 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 public class HttpCloudComputingClient {
+    public static final int DEFAULT_SLEEP_BEFORE_POLLING_MILLIS = 0;
+    public static final int DEFAULT_POLLING_INTERVAL_MILLIS = 1000;
+
     public static Object send(Class<?> clazz,
                               String methodName,
                               List<Class<?>> argTypes,
                               List<Object> args,
                               Class<?> retType,
-                              long startPollingIntervalMillis,
+                              long sleepBeforePollingMillis,
                               long pollingIntervalMillis) {
         if (Objects.requireNonNull(argTypes).size() != Objects.requireNonNull(args).size()) {
             throw new IllegalArgumentException();
@@ -73,7 +76,7 @@ public class HttpCloudComputingClient {
 
             long id = Long.parseLong(response.getContentAsString());
 
-            Thread.sleep(Long.max(0, startPollingIntervalMillis - pollingIntervalMillis));
+            Thread.sleep(Long.max(0, sleepBeforePollingMillis - pollingIntervalMillis));
             do {
                 Thread.sleep(pollingIntervalMillis);
                 response = httpClient.newRequest("http://localhost:8080/compute/result?id=" + id)
