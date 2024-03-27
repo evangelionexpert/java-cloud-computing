@@ -34,28 +34,10 @@ import java.util.stream.Stream;
 public class CloudComputeProcessor extends AbstractProcessor {
     public static final String EMPTY_VALUE = "";
     public static final String DEFAULT_CLASS_SUFFIX = "SobakaCloud";
-    private static final String HTTP_CLIENT_QUALIFIED_METHOD_NAME =
+    public static final String HTTP_CLIENT_QUALIFIED_METHOD_NAME =
         "ru.nsu.fit.smolyakov.sobakacloud.aop.HttpCloudComputingClient.send";
 
     public String generateClassSourceString(ClassInfo classInfo) {
-        /*
-            package ru.nsu.fit.smolyakov.sobakacloud.aop.appexample;
-
-            public class ClassToCalculateSobakaCloud {
-                public static double mememe(double a, double b) {
-                    return (double) ru.nsu.fit.smolyakov.sobakacloud.aop.HttpCloudComputingClient.send(
-                        ru.nsu.fit.smolyakov.sobakacloud.aop.appexample.ClassToCalculate.class,
-                        "mememe",
-                        java.util.List.of(double.class, double.class),
-                        java.util.List.of(a, b),
-                        double.class,
-                        1000,
-                        1000
-                    );
-                }
-}
-
-        */
         StringBuilder typesAndArgs = new StringBuilder();
         StringBuilder types = new StringBuilder();
         StringBuilder argNames = new StringBuilder();
@@ -372,6 +354,8 @@ public class CloudComputeProcessor extends AbstractProcessor {
             if (classInfo == null) return false;
 
             classInfo = setDefaultValues(classInfo);
+
+            System.err.println(classInfo);
             if (!validate(classInfo)) return false;
 
             System.err.println(generateClassSourceString(classInfo));

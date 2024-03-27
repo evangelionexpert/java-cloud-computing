@@ -59,7 +59,7 @@ public class SubmitServlet extends DefaultServlet {
         Class<?>[] argTypes = taskSubmitRequestDto.getArgs()
             .stream()
             .map(ArgDto::getArgType)
-            .map(ArgDto.Type::getClazz)
+            .map(ArgDto.Type::getAssociatedClass)
             .toArray(Class<?>[]::new);
 
         Method method;
