@@ -1,4 +1,4 @@
-package ru.nsu.fit.smolyakov.sobakacloud.server.exceptions;
+package ru.nsu.fit.smolyakov.sobakacloud.aop.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFilter;

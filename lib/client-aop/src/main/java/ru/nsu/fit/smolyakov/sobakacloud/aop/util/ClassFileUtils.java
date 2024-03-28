@@ -3,7 +3,7 @@ package ru.nsu.fit.smolyakov.sobakacloud.aop.util;
 import java.io.IOException;
 import java.util.Objects;
 
-public class Util {
+public class ClassFileUtils {
     public static String getClassFilePath(Class<?> clazz) {
         return clazz.getName().replace('.', '/')
             + ".class";

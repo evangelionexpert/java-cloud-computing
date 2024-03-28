@@ -6,10 +6,10 @@ import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.BytesRequestContent;
 import org.eclipse.jetty.client.util.MultiPartRequestContent;
 import org.eclipse.jetty.http.HttpMethod;
-import ru.nsu.fit.smolyakov.sobakacloud.aop.util.Util;
-import ru.nsu.fit.smolyakov.sobakacloud.server.dto.ArgDto;
-import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskResultResponseDto;
-import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskSubmitRequestDto;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.dto.ArgDto;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.dto.TaskResultResponseDto;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.dto.TaskSubmitRequestDto;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.util.ClassFileUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -50,7 +50,7 @@ public class HttpCloudComputingClient {
 
         byte[] clazzBytes;
         try {
-            clazzBytes = Util.getClassFileBytes(clazz);
+            clazzBytes = ClassFileUtils.getClassFileBytes(clazz);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

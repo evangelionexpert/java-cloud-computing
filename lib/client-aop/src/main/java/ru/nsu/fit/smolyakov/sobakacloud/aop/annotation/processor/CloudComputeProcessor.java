@@ -1,7 +1,7 @@
 package ru.nsu.fit.smolyakov.sobakacloud.aop.annotation.processor;
 
 import com.google.auto.service.AutoService;
-import ru.nsu.fit.smolyakov.sobakacloud.server.dto.ArgDto;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.dto.ArgDto;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -91,7 +91,7 @@ public class CloudComputeProcessor extends AbstractProcessor {
         return maybeAnnotation.get();
     }
 
-    private AllElements parseAllElements(Set<? extends TypeElement> annotations) {
+    private AnnotationElements parseAnnotationElements(Set<? extends TypeElement> annotations) {
         TypeElement computeClassAnnotationElement =
             (TypeElement) findElementByName(
                 annotations.stream(),
@@ -161,7 +161,7 @@ public class CloudComputeProcessor extends AbstractProcessor {
             );
         if (pollingIntervalMillisElement == null) return null;
 
-        return new AllElements(
+        return new AnnotationElements(
             computeClassAnnotationElement,
             serverAddressElement,
             targetShortClassNameElement,
@@ -219,7 +219,7 @@ public class CloudComputeProcessor extends AbstractProcessor {
         return value.getValue();
     }
 
-    private ClassInfo parseClass(TypeElement classElement, AllElements e) {
+    private ClassInfo parseClass(TypeElement classElement, AnnotationElements e) {
         if (!classElement.getModifiers().contains(Modifier.PUBLIC)) {
             processingEnv.getMessager().printMessage(
                 Diagnostic.Kind.ERROR,
@@ -255,15 +255,24 @@ public class CloudComputeProcessor extends AbstractProcessor {
 
 
         // parsing
-        String returnType = method.element.getReturnType().toString();
-        String sourcePackage = processingEnv.getElementUtils().getPackageOf(classElement).getQualifiedName().toString();
-        String sourceShortClassName = classElement.getSimpleName().toString();
-        String targetPackage = (String) getElementValueFromAnnotationMirror(classAnnotationMirror, e.targetPackageElement);
-        String targetShortClassName = (String) getElementValueFromAnnotationMirror(classAnnotationMirror, e.targetShortClassNameElement);
-        String sourceEntryMethodName = method.element.getSimpleName().toString();
-        String targetEntryMethodName = (String) getElementValueFromAnnotationMirror(method.annotationMirror, e.targetEntryMethodNameElement);
-        int sleepBeforePollingMillis = (int) getElementValueFromAnnotationMirror(method.annotationMirror, e.sleepBeforePollingMillisElement);
-        int pollingIntervalMillis = (int) getElementValueFromAnnotationMirror(method.annotationMirror, e.pollingIntervalMillisElement);
+        String returnType =
+            method.element.getReturnType().toString();
+        String sourcePackage =
+            processingEnv.getElementUtils().getPackageOf(classElement).getQualifiedName().toString();
+        String sourceShortClassName =
+            classElement.getSimpleName().toString();
+        String targetPackage =
+            (String) getElementValueFromAnnotationMirror(classAnnotationMirror, e.targetPackageElement);
+        String targetShortClassName =
+            (String) getElementValueFromAnnotationMirror(classAnnotationMirror, e.targetShortClassNameElement);
+        String sourceEntryMethodName =
+            method.element.getSimpleName().toString();
+        String targetEntryMethodName =
+            (String) getElementValueFromAnnotationMirror(method.annotationMirror, e.targetEntryMethodNameElement);
+        int sleepBeforePollingMillis =
+            (int) getElementValueFromAnnotationMirror(method.annotationMirror, e.sleepBeforePollingMillisElement);
+        int pollingIntervalMillis =
+            (int) getElementValueFromAnnotationMirror(method.annotationMirror, e.pollingIntervalMillisElement);
 
         List<Param> params = method.element.getParameters().stream()
             .map(param ->
@@ -287,7 +296,7 @@ public class CloudComputeProcessor extends AbstractProcessor {
         );
     }
 
-    public ClassInfo setDefaultValues(ClassInfo classInfo) {
+    public ClassInfo withDefaultValues(ClassInfo classInfo) {
         String targetPackage = classInfo.targetPackage;
         if (targetPackage.equals(EMPTY_VALUE)) {
             targetPackage = classInfo.sourcePackage;
@@ -346,14 +355,14 @@ public class CloudComputeProcessor extends AbstractProcessor {
             return false;
         }
 
-        var elements = parseAllElements(annotations);
-        if (elements == null) return false;
+        var annotationElements = parseAnnotationElements(annotations);
+        if (annotationElements == null) return false;
 
-        for (var possiblyClassElement : roundEnv.getElementsAnnotatedWith(elements.computeClassAnnotationElement)) {
-            var classInfo = parseClass((TypeElement) possiblyClassElement, elements);
+        for (var classElement : roundEnv.getElementsAnnotatedWith(annotationElements.computeClassAnnotationElement)) {
+            var classInfo = parseClass((TypeElement) classElement, annotationElements);
             if (classInfo == null) return false;
 
-            classInfo = setDefaultValues(classInfo);
+            classInfo = withDefaultValues(classInfo);
 
             System.err.println(classInfo);
             if (!validate(classInfo)) return false;
@@ -362,21 +371,31 @@ public class CloudComputeProcessor extends AbstractProcessor {
 
             JavaFileObject sourceFile;
             try {
-                sourceFile = processingEnv.getFiler().createSourceFile(classInfo.targetPackage + "." + classInfo.targetShortClassName);
+                sourceFile = processingEnv.getFiler().createSourceFile(
+                    classInfo.targetPackage + "." + classInfo.targetShortClassName
+                );
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.NOTE,
+                    "couldn't create sourceFile:" + e
+                );
+                return false;
             }
 
             try (OutputStream outputStream = sourceFile.openOutputStream()) {
                 outputStream.write(generateClassSourceString(classInfo).getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.NOTE,
+                    "couldn't write to sourceFile:" + e
+                );
+                return false;
             }
         }
         return true;
     }
 
-    private record AllElements(
+    private record AnnotationElements(
         TypeElement computeClassAnnotationElement,
         ExecutableElement serverAddressElement,
         ExecutableElement targetShortClassNameElement,

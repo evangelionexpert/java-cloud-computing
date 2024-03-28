@@ -1,4 +1,4 @@
-package ru.nsu.fit.smolyakov.sobakacloud.server.dto;
+package ru.nsu.fit.smolyakov.sobakacloud.aop.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
