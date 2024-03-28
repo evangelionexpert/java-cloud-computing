@@ -4,9 +4,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.servlet.DefaultServlet;
-import ru.nsu.fit.smolyakov.sobakacloud.server.dto.ArgDto;
-import ru.nsu.fit.smolyakov.sobakacloud.server.dto.TaskResultResponseDto;
-import ru.nsu.fit.smolyakov.sobakacloud.server.exceptions.SobakaUnderlyingMethodExecutionException;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.dto.ArgDto;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.dto.TaskResultResponseDto;
+import ru.nsu.fit.smolyakov.sobakacloud.aop.exceptions.SobakaUnderlyingMethodExecutionException;
 import ru.nsu.fit.smolyakov.sobakacloud.server.executor.MethodExecutor;
 
 import java.io.IOException;

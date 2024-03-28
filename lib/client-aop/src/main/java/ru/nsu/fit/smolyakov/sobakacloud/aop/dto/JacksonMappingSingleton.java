@@ -1,4 +1,4 @@
-package ru.nsu.fit.smolyakov.sobakacloud.server.dto;
+package ru.nsu.fit.smolyakov.sobakacloud.aop.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
