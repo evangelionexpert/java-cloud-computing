@@ -1,5 +1,6 @@
 package ru.nsu.fit.smolyakov.sobakacloud.aop.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -70,6 +71,7 @@ public abstract sealed class TaskResultResponseDto
     }
 
     public static final class Failure extends TaskResultResponseDto {
+        @JsonProperty("exception")
         private final SobakaUnderlyingMethodExecutionException exception;
 
         public Failure(@JsonProperty("exception") SobakaUnderlyingMethodExecutionException exception) {
@@ -77,6 +79,7 @@ public abstract sealed class TaskResultResponseDto
             this.exception = exception;
         }
 
+        @JsonIgnore
         public SobakaUnderlyingMethodExecutionException getSobakaExecutionException() {
             return exception;
         }

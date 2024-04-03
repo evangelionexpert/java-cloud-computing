@@ -6,13 +6,12 @@ import ru.nsu.fit.smolyakov.sobakacloud.aop.annotation.SobakaEntryMethod;
 @SobakaCloudCompute(server = "localhost:8080")
 public class ClassToCalculate {
     @SobakaEntryMethod
-    public static int[] mememe(int[] arr, String eee) {
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] += 5;
+    public static int calculateMe(String some) {
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-
-        System.err.println(eee);
-
-        return arr;
+        throw new NullPointerException("this is exception");
     }
 }
